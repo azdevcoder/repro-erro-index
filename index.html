@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><title>Repro erro index.html</title></head>
+<body>
+<h1>Repro erro index.html — m.descricao.length</h1>
+<pre id="out"></pre>
+<script src="repro.js"></script>
+<script>
+// Simula js/index.js render() linha 43 vs 47
+var lista = [
+  { id: "1", titulo: "Com descricao", setor: "ADMIN", prioridade: 1, descricao: "x".repeat(100), passos: [] },
+  { id: "2", titulo: "Sem descricao (import sem campo)", setor: "ADMIN", prioridade: 2, passos: [] }
+  // item 2 NÃO tem descricao -> undefined (caso real: backup importado / localStorage editado)
+];
+var log = [];
+lista.forEach(function (m, i) {
+  try {
+    var desc = (m.descricao || "").slice(0, 90); // linha 43: seguro
+    // linha 47 original (BUGGY):
+    var tail = (desc ? (m.descricao.length > 90 ? "…" : "") : "");
+    log.push("item " + i + " OK tail=" + tail);
+  } catch (e) {
+    log.push("item " + i + " THROW " + e.name + ": " + e.message);
+    console.error(e);
+    throw e; // para aparecer no console do navegador como no projeto real
+  }
+});
+document.getElementById("out").textContent = log.join("\n");
+</script>
+</body>
+</html>
